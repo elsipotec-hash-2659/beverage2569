@@ -4,236 +4,263 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบบันทึกรับ-จ่าย ร้านน้ำ</title>
-    <!-- นำเข้าฟอนต์ Prompt จาก Google Fonts เพื่อความสวยงามอ่านง่าย -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <style>
-        /* --- ส่วนที่ 1: CSS ตกแต่งความสวยงาม (UI ระดับ 6) --- */
-        * { 
-            box-sizing: border-box; 
-            margin: 0; 
-            padding: 0; 
-            font-family: 'Prompt', sans-serif; 
-        }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Prompt', sans-serif; }
         body { 
-            /* พื้นหลังไล่สีโทนสว่าง สบายตา */
             background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%); 
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+            min-height: 100vh; display: flex; justify-content: center; align-items: center; padding: 20px;
         }
         
         .card {
-            background: rgba(255, 255, 255, 0.95); /* พื้นหลังการ์ดสีขาวโปร่งแสงนิดๆ */
-            width: 100%;
-            max-width: 450px;
-            padding: 30px;
-            border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.15); /* เงาให้การ์ดดูลอยขึ้นมา */
+            background: rgba(255, 255, 255, 0.95);
+            width: 100%; max-width: 450px; padding: 30px;
+            border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.15);
         }
         
-        .card-header {
-            text-align: center;
-            margin-bottom: 25px;
-        }
+        .card-header { text-align: center; margin-bottom: 20px; }
+        .card-header h2 { color: #2d3748; font-weight: 600; font-size: 26px; }
         
-        .card-header h2 { 
-            color: #2d3748; 
-            font-weight: 600; 
-            font-size: 26px;
+        /* สไตล์สำหรับ Tabs เมนูสลับหน้า */
+        .tabs {
+            display: flex; background-color: #edf2f7; border-radius: 10px; margin-bottom: 25px; padding: 5px;
         }
-        
-        .card-header p { 
-            color: #718096; 
-            font-size: 14px; 
-            margin-top: 5px; 
+        .tab-btn {
+            flex: 1; padding: 10px; border: none; background: transparent; color: #718096;
+            font-size: 15px; font-weight: 500; border-radius: 8px; cursor: pointer; transition: 0.3s;
         }
-        
-        .form-group { 
-            margin-bottom: 15px; 
-        }
-        
-        label { 
-            display: block; 
-            font-size: 14px; 
-            color: #4a5568; 
-            margin-bottom: 6px; 
-            font-weight: 500; 
-        }
-        
+        .tab-btn.active { background: white; color: #667eea; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; animation: fadeIn 0.4s; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* สไตล์ฟอร์ม */
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 14px; color: #4a5568; margin-bottom: 6px; font-weight: 500; }
         input, select {
-            width: 100%;
-            padding: 12px 15px;
-            border: 1.5px solid #e2e8f0;
-            border-radius: 8px;
-            font-size: 15px;
-            background-color: #f8fafc;
-            transition: all 0.3s ease; /* ทำให้เวลาคลิกเปลี่ยนสีดูนุ่มนวล */
+            width: 100%; padding: 12px 15px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+            font-size: 15px; background-color: #f8fafc; transition: all 0.3s ease;
         }
-        
-        input:focus, select:focus {
-            outline: none;
-            border-color: #667eea;
-            background-color: #ffffff;
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); /* ไฮไลท์กรอบตอนพิมพ์ */
-        }
-        
-        .row { 
-            display: flex; 
-            gap: 15px; 
-        }
-        
-        .row .form-group { 
-            flex: 1; /* แบ่งครึ่งความกว้างเท่าๆ กัน */
-        }
+        input:focus, select:focus { outline: none; border-color: #667eea; background-color: #ffffff; box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); }
+        .row { display: flex; gap: 15px; }
+        .row .form-group { flex: 1; }
 
         .btn-submit {
-            width: 100%;
-            padding: 14px;
-            /* ปุ่มกดสีไล่ระดับ ดูมีมิติ */
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-size: 16px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform 0.2s, box-shadow 0.2s;
-            margin-top: 10px;
+            width: 100%; padding: 14px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white; border: none; border-radius: 8px; font-size: 16px; font-weight: 600;
+            cursor: pointer; transition: 0.2s; margin-top: 10px;
         }
-        
-        .btn-submit:hover { 
-            transform: translateY(-2px); /* เอฟเฟกต์ยกปุ่มตอนเมาส์ชี้ */
-            box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4); 
-        }
-        
-        .btn-submit:disabled { 
-            background: #cbd5e0; 
-            cursor: not-allowed; 
-            transform: none; 
-            box-shadow: none; 
-        }
+        .btn-submit:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(118, 75, 162, 0.4); }
+        .btn-submit:disabled { background: #cbd5e0; cursor: not-allowed; transform: none; box-shadow: none; }
+        #msg { text-align: center; margin-top: 15px; font-size: 14px; font-weight: 500; min-height: 21px; }
+        .success-text { color: #38a169; } .error-text { color: #e53e3e; }
 
-        #msg { 
-            text-align: center; 
-            margin-top: 15px; 
-            font-size: 14px; 
-            font-weight: 500; 
-            min-height: 21px; 
+        /* สไตล์สำหรับหน้าสรุปยอด (Dashboard) */
+        .summary-box {
+            padding: 15px; border-radius: 12px; margin-bottom: 15px; text-align: center; color: white;
         }
+        .box-income { background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); }
+        .box-expense { background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%); }
+        .box-balance { background: linear-gradient(135deg, #4299e1 0%, #3182ce 100%); margin-top: 20px;}
+        .summary-title { font-size: 14px; opacity: 0.9; }
+        .summary-amount { font-size: 24px; font-weight: 600; margin-top: 5px; }
         
-        .success-text { color: #38a169; }
-        .error-text { color: #e53e3e; }
+        .history-list { margin-top: 20px; }
+        .history-list h3 { font-size: 16px; color: #4a5568; margin-bottom: 10px; }
+        .history-item { 
+            display: flex; justify-content: space-between; padding: 10px; 
+            border-bottom: 1px solid #edf2f7; font-size: 14px;
+        }
+        .btn-refresh {
+            width: 100%; padding: 12px; background-color: #edf2f7; color: #4a5568; border: none;
+            border-radius: 8px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 15px;
+        }
+        .btn-refresh:hover { background-color: #e2e8f0; }
     </style>
 </head>
 <body>
 
     <div class="card">
         <div class="card-header">
-            <h2>บันทึกรับ-จ่าย 🥤</h2>
-            <p>ระบบจัดการหลังร้าน (ลงฐานข้อมูลอัตโนมัติ)</p>
+            <h2>ระบบร้านน้ำ 🥤</h2>
         </div>
 
-        <!-- --- ส่วนที่ 2: โครงสร้างแบบฟอร์ม HTML --- -->
-        <form id="recordForm" name="google-sheet-form">
-            <div class="row">
-                <div class="form-group">
-                    <label>ประเภท (Type)</label>
-                    <select name="type" required>
-                        <option value="รายรับ">📈 รายรับ</option>
-                        <option value="รายจ่าย">📉 รายจ่าย</option>
-                    </select>
+        <!-- แถบเมนู (Tabs) -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab('record')">📝 บันทึกข้อมูล</button>
+            <button class="tab-btn" onclick="switchTab('dashboard')">📊 ดูสรุปยอด</button>
+        </div>
+
+        <!-- หน้าที่ 1: ฟอร์มบันทึกข้อมูล (ออริจินัลของคุณ) -->
+        <div id="recordTab" class="tab-content active">
+            <form id="recordForm" name="google-sheet-form">
+                <div class="row">
+                    <div class="form-group">
+                        <label>ประเภท (Type)</label>
+                        <select name="type" required>
+                            <option value="รายรับ">📈 รายรับ</option>
+                            <option value="รายจ่าย">📉 รายจ่าย</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>ช่องทาง (Payment)</label>
+                        <select name="payment" required>
+                            <option value="เงินสด">💵 เงินสด</option>
+                            <option value="โอนเงิน/QR">📱 โอนเงิน/QR</option>
+                            <option value="แอปเดลิเวอรี">🛵 แอปเดลิเวอรี</option>
+                        </select>
+                    </div>
                 </div>
                 <div class="form-group">
-                    <label>ช่องทาง (Payment)</label>
-                    <select name="payment" required>
-                        <option value="เงินสด">💵 เงินสด</option>
-                        <option value="โอนเงิน/QR">📱 โอนเงิน/QR</option>
-                        <option value="แอปเดลิเวอรี">🛵 แอปเดลิเวอรี</option>
-                    </select>
-                </div>
-            </div>
-
-            <div class="form-group">
-                <label>หมวดหมู่ (Category)</label>
-                <input type="text" name="category" placeholder="เช่น เครื่องดื่ม, วัตถุดิบ, เบ็ดเตล็ด" required>
-            </div>
-
-            <div class="form-group">
-                <label>ชื่อรายการ (Item Name)</label>
-                <input type="text" name="itemName" placeholder="เช่น ชาไทยไข่มุก, น้ำแข็ง 1 กระสอบ" required>
-            </div>
-
-            <div class="row">
-                <div class="form-group">
-                    <label>จำนวน (Qty)</label>
-                    <input type="number" name="quantity" placeholder="0" min="1" step="0.01" required>
+                    <label>หมวดหมู่ (Category)</label>
+                    <input type="text" name="category" placeholder="เช่น เครื่องดื่ม, วัตถุดิบ" required>
                 </div>
                 <div class="form-group">
-                    <label>ราคา/หน่วย (Price)</label>
-                    <input type="number" name="unitPrice" placeholder="0" min="0" step="0.01" required>
+                    <label>ชื่อรายการ (Item Name)</label>
+                    <input type="text" name="itemName" placeholder="เช่น ชาไทยไข่มุก" required>
                 </div>
-            </div>
+                <div class="row">
+                    <div class="form-group">
+                        <label>จำนวน (Qty)</label>
+                        <input type="number" name="quantity" placeholder="0" min="1" step="0.01" required>
+                    </div>
+                    <div class="form-group">
+                        <label>ราคา/หน่วย (Price)</label>
+                        <input type="number" name="unitPrice" placeholder="0" min="0" step="0.01" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>หมายเหตุ (Note)</label>
+                    <input type="text" name="note" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)">
+                </div>
+                <button type="submit" id="btnSubmit" class="btn-submit">💾 บันทึกข้อมูล</button>
+                <div id="msg"></div>
+            </form>
+        </div>
 
-            <div class="form-group">
-                <label>หมายเหตุ (Note)</label>
-                <input type="text" name="note" placeholder="รายละเอียดเพิ่มเติม (ถ้ามี)">
-            </div>
+        <!-- หน้าที่ 2: หน้าแดชบอร์ดสรุปยอด -->
+        <div id="dashboardTab" class="tab-content">
+            <div id="loadingData" style="text-align:center; padding: 20px; color: #718096;">กำลังโหลดข้อมูล... ⏳</div>
+            
+            <div id="dashboardData" style="display: none;">
+                <div class="row">
+                    <div class="summary-box box-income" style="flex: 1;">
+                        <div class="summary-title">รายรับทั้งหมด</div>
+                        <div class="summary-amount" id="totalIncome">0 ฿</div>
+                    </div>
+                    <div class="summary-box box-expense" style="flex: 1;">
+                        <div class="summary-title">รายจ่ายทั้งหมด</div>
+                        <div class="summary-amount" id="totalExpense">0 ฿</div>
+                    </div>
+                </div>
+                <div class="summary-box box-balance">
+                    <div class="summary-title">ยอดคงเหลือ (กำไร)</div>
+                    <div class="summary-amount" id="totalBalance">0 ฿</div>
+                </div>
 
-            <button type="submit" id="btnSubmit" class="btn-submit">💾 บันทึกข้อมูล</button>
-            <div id="msg"></div>
-        </form>
+                <div class="history-list">
+                    <h3>5 รายการล่าสุด</h3>
+                    <div id="historyItems"></div>
+                </div>
+
+                <button class="btn-refresh" onclick="fetchSummaryData()">🔄 โหลดข้อมูลใหม่</button>
+            </div>
+        </div>
+
     </div>
 
-    <!-- --- ส่วนที่ 3: JavaScript สำหรับส่งข้อมูล --- -->
     <script>
-        // ใส่ลิงก์ SCRIPT_URL ที่คุณกำหนดมาเรียบร้อยแล้วครับ
-        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzVnddnZymdnfXo4pN3oSzMJpazodxn1qU6eaSyHMVUfcZzfvmd2LX6H0HLCWuSdBYX/exec";
+        // === วาง URL ที่ได้จากการกด New Deployment ล่าสุดตรงนี้ครับ ===
+        const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzWBue69b0o6KOHypFs30SIMzj6QTyw5l3O-7r3y0q_xF_qkVyISNELN8CQrryfPIt8/exec";
+        // =======================================================
 
         const form = document.forms['google-sheet-form'];
         const btnSubmit = document.getElementById('btnSubmit');
         const msg = document.getElementById('msg');
 
-        // ฟังก์ชันนี้จะทำงานเมื่อมีการกดปุ่ม "บันทึกข้อมูล"
+        // ฟังก์ชันส่งข้อมูลฟอร์ม
         form.addEventListener('submit', e => {
-            e.preventDefault(); // ป้องกันไม่ให้เบราว์เซอร์รีเฟรชหน้าเว็บ
-            
-            // เปลี่ยนหน้าตาปุ่มเพื่อบอกผู้ใช้ว่าระบบกำลังประมวลผล
+            e.preventDefault();
             btnSubmit.innerHTML = 'กำลังบันทึกข้อมูล... ⏳';
             btnSubmit.disabled = true;
             msg.innerHTML = '';
 
-            // ใช้ fetch API ส่งข้อมูลจากฟอร์มไปที่ SCRIPT_URL ในรูปแบบ POST
-            fetch(SCRIPT_URL, { 
-                method: 'POST', 
-                body: new FormData(form) 
-            })
+            fetch(SCRIPT_URL, { method: 'POST', body: new FormData(form) })
             .then(response => {
-                // กรณีบันทึกสำเร็จ
                 msg.innerHTML = '✅ บันทึกข้อมูลสำเร็จเรียบร้อย!';
                 msg.className = 'success-text';
-                form.reset(); // ล้างข้อมูลในช่องกรอกทั้งหมด
-                resetButton(); // คืนสภาพปุ่มกลับมาเหมือนเดิม
-                
-                // ตั้งเวลาให้ข้อความแจ้งเตือนหายไปเองใน 3.5 วินาที
+                form.reset(); 
+                btnSubmit.innerHTML = '💾 บันทึกข้อมูล';
+                btnSubmit.disabled = false;
                 setTimeout(() => { msg.innerHTML = ''; }, 3500);
             })
             .catch(error => {
-                // กรณีเกิดข้อผิดพลาดในการส่งข้อมูล
                 console.error('Error!', error.message);
-                msg.innerHTML = '❌ เกิดข้อผิดพลาดในการเชื่อมต่อ โปรดลองอีกครั้ง';
+                msg.innerHTML = '❌ เกิดข้อผิดพลาด โปรดลองอีกครั้ง';
                 msg.className = 'error-text';
-                resetButton();
+                btnSubmit.innerHTML = '💾 บันทึกข้อมูล';
+                btnSubmit.disabled = false;
             });
         });
 
-        // ฟังก์ชันช่วยย้อนกลับสถานะปุ่มกด
-        function resetButton() {
-            btnSubmit.innerHTML = '💾 บันทึกข้อมูล';
-            btnSubmit.disabled = false;
+        // ฟังก์ชันสลับหน้า (Tabs)
+        function switchTab(tabId) {
+            // ซ่อนเนื้อหาทั้งหมด ลบเส้นใต้ active
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            
+            // แสดงหน้าที่เลือก
+            document.getElementById(tabId + 'Tab').classList.add('active');
+            event.currentTarget.classList.add('active');
+
+            // ถ้าเปิดหน้าแดชบอร์ด ให้ดึงข้อมูลมาแสดงทันที
+            if(tabId === 'dashboard') {
+                fetchSummaryData();
+            }
+        }
+
+        // ฟังก์ชันดึงข้อมูลสรุปยอดจาก Google Sheet
+        function fetchSummaryData() {
+            document.getElementById('loadingData').style.display = 'block';
+            document.getElementById('dashboardData').style.display = 'none';
+
+            fetch(SCRIPT_URL) // ใช้ Method GET อัตโนมัติเพื่อเรียกฟังก์ชัน doGet
+            .then(response => response.json())
+            .then(data => {
+                // อัปเดตตัวเลขในหน้าจอ
+                document.getElementById('totalIncome').innerText = data.income.toLocaleString() + ' ฿';
+                document.getElementById('totalExpense').innerText = data.expense.toLocaleString() + ' ฿';
+                document.getElementById('totalBalance').innerText = data.balance.toLocaleString() + ' ฿';
+                
+                // สร้างรายการประวัติล่าสุด
+                let historyHTML = '';
+                data.history.forEach(item => {
+                    let color = item.type === 'รายรับ' ? '#38a169' : '#e53e3e';
+                    let sign = item.type === 'รายรับ' ? '+' : '-';
+                    historyHTML += `
+                        <div class="history-item">
+                            <div>
+                                <strong>${item.item}</strong> 
+                                <span style="color: #a0aec0; font-size:12px; margin-left:5px;">${item.time}</span>
+                            </div>
+                            <div style="color: ${color}; font-weight: 500;">
+                                ${sign}${item.amount.toLocaleString()} ฿
+                            </div>
+                        </div>
+                    `;
+                });
+                
+                document.getElementById('historyItems').innerHTML = historyHTML || '<div style="text-align:center; color:#a0aec0;">ยังไม่มีรายการ</div>';
+                
+                // ปิดสถานะโหลด แสดงข้อมูล
+                document.getElementById('loadingData').style.display = 'none';
+                document.getElementById('dashboardData').style.display = 'block';
+            })
+            .catch(error => {
+                document.getElementById('loadingData').innerHTML = '❌ ไม่สามารถดึงข้อมูลได้ โปรดลองอีกครั้ง';
+                console.error('Error fetching data:', error);
+            });
         }
     </script>
 </body>
